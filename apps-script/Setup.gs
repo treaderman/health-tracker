@@ -95,7 +95,7 @@ var SAVED_FOOD_SEED = [
  * ------------------------------------------------------------------ */
 
 function setup() {
-  var ss = SpreadsheetApp.getActive();
+  var ss = ss_();
   var notes = [];
 
   try { ss.setSpreadsheetTimeZone('America/New_York'); } catch (e) {}

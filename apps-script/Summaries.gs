@@ -105,7 +105,7 @@ function writeSummaryFormulas_() {
 }
 
 function writeSummaryTab_(name, headers, formulas, textColumns) {
-  var ss = SpreadsheetApp.getActive();
+  var ss = ss_();
   var sh = ss.getSheetByName(name) || ss.insertSheet(name);
 
   if (sh.getMaxRows() > 1) sh.getRange(2, 1, sh.getMaxRows() - 1, sh.getMaxColumns()).clear();

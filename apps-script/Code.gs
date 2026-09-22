@@ -99,7 +99,37 @@ function checkToken_(supplied) {
  * Sheet helpers
  * ------------------------------------------------------------------ */
 
-function ss_() { return SpreadsheetApp.getActive(); }
+/**
+ * The spreadsheet this script writes to.
+ *
+ * Paste your sheet's id between the quotes. You find it in the sheet's own
+ * web address, the long jumble between "/d/" and "/edit":
+ *
+ *   docs.google.com/spreadsheets/d/THIS_PART_RIGHT_HERE/edit
+ *
+ * This is not a password — it is just the sheet's name in Google's filing
+ * system. Your sheet stays private either way.
+ *
+ * Leave it blank ('') only if you move this code into a script attached to
+ * the sheet itself, in which case it uses whichever sheet it is attached to.
+ */
+var SPREADSHEET_ID = '';
+
+var _ssCache = null;
+
+function ss_() {
+  if (_ssCache) return _ssCache;
+  if (SPREADSHEET_ID) {
+    _ssCache = SpreadsheetApp.openById(SPREADSHEET_ID);
+    return _ssCache;
+  }
+  _ssCache = SpreadsheetApp.getActive();
+  if (!_ssCache) {
+    throw new Error('No spreadsheet found. Open Code.gs and set SPREADSHEET_ID ' +
+                    'near the top to your sheet id.');
+  }
+  return _ssCache;
+}
 
 function sheet_(name) {
   var sh = ss_().getSheetByName(name);
@@ -304,7 +334,7 @@ function logOps_(payload) {
   var ops = (payload && payload.ops) || [];
   if (!ops.length) return { ok: true, results: [] };
 
-  var lock = LockService.getDocumentLock();
+  var lock = LockService.getScriptLock();
   lock.waitLock(25000);
 
   var results = [];
