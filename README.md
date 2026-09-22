@@ -22,9 +22,11 @@ app is Phase 2.
 **Neither the link nor the token is in this repo, and neither should ever be put
 here.** This repo is public. Your data is not — it lives only in your private sheet.
 
-The sheet's ID does appear in the live copy of `Code.gs`, but not in this repo.
-That ID is not a password; it is just the sheet's name in Google's filing system,
-and the sheet stays private either way.
+The sheet's ID is filled in on the live copy of `Code.gs` but ships blank here. It
+did appear in a couple of early commits, which is worth knowing but not worth
+worrying about: a sheet ID is not a password, just the sheet's name in Google's
+filing system. Your sheet is private, and stays private, regardless of who knows
+its ID.
 
 ---
 

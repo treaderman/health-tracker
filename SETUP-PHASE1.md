@@ -21,8 +21,8 @@ Don't add any tabs or headings — the script builds all of that.
 Look at the web address of your new sheet. It looks like this:
 
 ```
-docs.google.com/spreadsheets/d/1maafdKNFxdapMwKxP4oL3UfVtsIPcrEa0BAxR88ivFs/edit
-                              └──────────── this long middle part ────────────┘
+docs.google.com/spreadsheets/d/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789/edit
+                              └────── this long middle part ──────┘
 ```
 
 Copy that middle part. That's the sheet's ID. It isn't a password — it's just the
