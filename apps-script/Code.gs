@@ -29,6 +29,24 @@ var KEY_COL = {
   Settings: 'key', TargetHistory: 'date_changed'
 };
 
+/**
+ * Columns that must stay plain text.
+ *
+ * Sheets will happily turn "2026-09-22" into a real date on write, which
+ * breaks every formula and filter that expects the string. Setting the cell
+ * format to plain text immediately before writing is what stops that.
+ */
+var TEXT_COLUMNS = {
+  Food: [2, 3],
+  Fluids: [2, 3],
+  Activity: [2, 3],
+  Steps: [1],
+  Body: [2],
+  Symptoms: [2, 3],
+  Settings: [2],
+  TargetHistory: [1]
+};
+
 /** The column that makes a row unique, falling back to the first column. */
 function keyCol_(name) {
   return KEY_COL[name] || SCHEMA[name][0];
@@ -137,6 +155,37 @@ function sheet_(name) {
   return sh;
 }
 
+function setRowTextFormats_(sh, name, rowIndex) {
+  var cols = TEXT_COLUMNS[name];
+  if (!cols) return;
+  for (var i = 0; i < cols.length; i++) {
+    sh.getRange(rowIndex, cols[i]).setNumberFormat('@');
+  }
+}
+
+/** Append a row, keeping date and timestamp columns as plain text. */
+function appendRow_(name, values) {
+  var sh = sheet_(name);
+  var rowIndex = sh.getLastRow() + 1;
+  setRowTextFormats_(sh, name, rowIndex);
+  sh.getRange(rowIndex, 1, 1, values.length).setValues([values]);
+  return rowIndex;
+}
+
+/**
+ * Turn a real date back into the string we expect.
+ *
+ * Rows written before the text-format fix, or typed straight into the sheet
+ * by hand, come back as Date objects. This makes reads behave the same way
+ * whichever happened.
+ */
+function normalizeCell_(header, v) {
+  if (Object.prototype.toString.call(v) !== '[object Date]') return v;
+  if (header === 'timestamp') return Utilities.formatDate(v, tz_(), "yyyy-MM-dd'T'HH:mm:ssXXX");
+  if (header === 'date' || header === 'date_changed') return Utilities.formatDate(v, tz_(), 'yyyy-MM-dd');
+  return v;
+}
+
 function readAll_(name) {
   var sh = sheet_(name);
   var last = sh.getLastRow();
@@ -147,7 +196,7 @@ function readAll_(name) {
   var out = [];
   for (var i = 0; i < values.length; i++) {
     var row = { _row: i + 2 };
-    for (var c = 0; c < headers.length; c++) row[headers[c]] = values[i][c];
+    for (var c = 0; c < headers.length; c++) row[headers[c]] = normalizeCell_(headers[c], values[i][c]);
     if (String(row[key] == null ? '' : row[key]) !== '') out.push(row);
   }
   return out;
@@ -187,12 +236,16 @@ function yn_(v) {
   return (s === 'Y' || s === 'YES' || s === 'TRUE') ? 'Y' : 'N';
 }
 
+var _tzCache = null;
+
 function tz_() {
+  if (_tzCache) return _tzCache;
+  _tzCache = Session.getScriptTimeZone();
   try {
     var s = readSettings_();
-    if (s.tz) return String(s.tz);
+    if (s.tz) _tzCache = String(s.tz);
   } catch (e) {}
-  return Session.getScriptTimeZone();
+  return _tzCache;
 }
 
 function nowIso_() {
@@ -241,7 +294,7 @@ function writeSetting_(key, value) {
       }
     }
   }
-  sh.appendRow([key, value]);
+  appendRow_('Settings', [key, value]);
 }
 
 function saveSettings_(payload) {
@@ -267,7 +320,7 @@ function saveTargets_(payload) {
 
   var current = readSettings_();
   var when = String((payload && payload.date) || todayIso_());
-  sheet_('TargetHistory').appendRow([
+  appendRow_('TargetHistory', [
     when,
     current.cal_low, current.cal_high,
     current.protein_low, current.protein_high,
@@ -407,12 +460,12 @@ function applyOp_(op, cache) {
   var row = buildRow_(name, op.row || {}, keyCol, key);
 
   if (existingRow) {
+    setRowTextFormats_(sh, name, existingRow);
     sh.getRange(existingRow, 1, 1, row.length).setValues([row]);
     return { id: key, status: 'updated' };
   }
 
-  sh.appendRow(row);
-  index[key] = sh.getLastRow();
+  index[key] = appendRow_(name, row);
   return { id: key, status: 'created' };
 }
 

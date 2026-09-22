@@ -15,18 +15,6 @@ var TAB_ORDER = [
   'SavedFoods', 'Settings', 'TargetHistory', 'DailySummary', 'WeeklySummary'
 ];
 
-/** Columns that must stay plain text so Sheets never re-reads them as dates. */
-var TEXT_COLUMNS = {
-  Food: [2, 3],
-  Fluids: [2, 3],
-  Activity: [2, 3],
-  Steps: [1],
-  Body: [2],
-  Symptoms: [2, 3],
-  Settings: [2],
-  TargetHistory: [1]
-};
-
 var SETTINGS_DEFAULTS = [
   ['cal_min', '1500'],
   ['protein_min', '60'],
