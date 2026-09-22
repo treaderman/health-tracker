@@ -253,6 +253,40 @@ function reorderTabs_(ss) {
   if (first) ss.setActiveSheet(first);
 }
 
+/**
+ * Prints what the summary tabs currently show.
+ *
+ * Run this if a total on the phone ever disagrees with the sheet — it shows
+ * exactly what DailySummary and WeeklySummary have worked out.
+ */
+function checkSummaries() {
+  var lines = [];
+  var tabs = [
+    { name: 'DailySummary', width: DAILY_HEADERS.length },
+    { name: 'WeeklySummary', width: WEEKLY_HEADERS.length }
+  ];
+
+  for (var t = 0; t < tabs.length; t++) {
+    var sh = sheet_(tabs[t].name);
+    var lastRow = sh.getLastRow();
+    lines.push('== ' + tabs[t].name + ' — ' + Math.max(0, lastRow - 1) + ' row(s) ==');
+    if (lastRow < 2) {
+      lines.push('(nothing logged yet)');
+      lines.push('');
+      continue;
+    }
+    var values = sh.getRange(1, 1, lastRow, tabs[t].width).getValues();
+    for (var r = 0; r < values.length; r++) lines.push(values[r].join(' | '));
+    lines.push('');
+  }
+
+  var out = lines.join('
+');
+  Logger.log(out);
+  try { SpreadsheetApp.getUi().alert(out); } catch (e) {}
+  return out;
+}
+
 /* ------------------------------------------------------------------ *
  * Self test — run this to prove the API works before you touch a phone
  * ------------------------------------------------------------------ */
