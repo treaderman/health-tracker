@@ -214,10 +214,13 @@ function getIndex_(name, cache) {
   var last = sh.getLastRow();
   var map = {};
   if (last >= 2) {
-    var col = SCHEMA[name].indexOf(keyCol_(name)) + 1;
+    var keyName = keyCol_(name);
+    var col = SCHEMA[name].indexOf(keyName) + 1;
     var vals = sh.getRange(2, col, last - 1, 1).getValues();
     for (var i = 0; i < vals.length; i++) {
-      var k = String(vals[i][0] == null ? '' : vals[i][0]);
+      // Normalised, so a date-keyed row still matches a "YYYY-MM-DD" key.
+      var raw = normalizeCell_(keyName, vals[i][0]);
+      var k = String(raw == null ? '' : raw);
       if (k) map[k] = i + 2;
     }
   }
