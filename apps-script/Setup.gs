@@ -280,8 +280,7 @@ function checkSummaries() {
     lines.push('');
   }
 
-  var out = lines.join('
-');
+  var out = lines.join('\n');
   Logger.log(out);
   try { SpreadsheetApp.getUi().alert(out); } catch (e) {}
   return out;
