@@ -470,7 +470,14 @@ function applyOp_(op, cache) {
   if (mode === 'delete') {
     if (!existingRow) return { id: key, status: 'missing' };
     sh.deleteRow(existingRow);
-    delete cache[name];
+
+    // Every row below the deleted one moves up by one. Shifting the cached
+    // positions is far cheaper than re-reading the key column, which matters
+    // when a batch deletes many rows at once.
+    delete index[key];
+    for (var other in index) {
+      if (index[other] > existingRow) index[other] -= 1;
+    }
     return { id: key, status: 'deleted' };
   }
 
