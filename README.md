@@ -5,8 +5,12 @@ Built for logging in under ten seconds, from a truck, with one thumb, on bad sig
 
 No mood tracking. No hunger scales. No journaling. No streaks or badges.
 
-**Status: Phase 1 is built and live.** The sheet and its API are working. The phone
-app is Phase 2.
+**Status: Phase 2 is built and live.** The app is installable on your phone and
+logs offline. Week view, the visit report and the full Settings screen are next.
+
+**The app: https://treaderman.github.io/health-tracker/**
+Open that in Safari on your iPhone — see [INSTALL.md](INSTALL.md) for the five
+minute setup and a test checklist.
 
 ---
 
@@ -14,6 +18,7 @@ app is Phase 2.
 
 | Piece | Where |
 |---|---|
+| The app | https://treaderman.github.io/health-tracker/ |
 | Your spreadsheet | Google Drive, named **Health Tracker** |
 | The code that runs it | Apps Script project named **Health Tracker API** |
 | Your web app link | Given to you in chat — keep it with your token |
@@ -53,10 +58,10 @@ entries arrive. You never refresh anything.
 
 ## Changing your targets
 
-Once the app exists (Phase 2), you change targets on the Settings screen and it
-writes a TargetHistory row for you.
+Editing targets from the app's Settings screen comes with the next phase, along
+with the TargetHistory row it writes for you.
 
-Until then, edit the **Settings** tab directly. Find the row by its key in column A
+For now, edit the **Settings** tab directly. Find the row by its key in column A
 and change column B.
 
 | Key | Means | Now |
@@ -154,17 +159,28 @@ you never have to retype it into the app.
 
 ```
 health-tracker/
+├─ index.html           the app, all screens in one page
+├─ css/app.css          the "Ridge" palette, light and dark
+├─ js/
+│  ├─ db.js             IndexedDB: the outbox and the cached sheet
+│  ├─ api.js            talking to Apps Script, and the CORS rules it needs
+│  ├─ state.js          day rollover, totals, merging outbox with sheet
+│  ├─ sync.js           flushing the outbox, retries, the waiting badge
+│  ├─ ui.js             every screen
+│  └─ app.js            boot
+├─ sw.js                service worker: caches the app, never your data
+├─ manifest.webmanifest
+├─ icons/
 ├─ apps-script/
 │  ├─ Code.gs           the API: routing, token check, reads and writes
 │  ├─ Setup.gs          setup(), the seed data, and the diagnostics
 │  ├─ Summaries.gs      the DailySummary and WeeklySummary formulas
 │  ├─ ProteinClock.gs   the calendar alert
 │  └─ appsscript.json   project manifest
-├─ SETUP-PHASE1.md      how to build all of this from scratch
+├─ INSTALL.md           putting it on your phone, and the test checklist
+├─ SETUP-PHASE1.md      how to rebuild the sheet and API from scratch
 └─ README.md            this file
 ```
-
-Phase 2 adds the phone app at the repo root, served by GitHub Pages.
 
 ---
 
