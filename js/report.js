@@ -16,6 +16,13 @@ const Report = (() => {
   function whole(n) { return Math.round(Number(n) || 0); }
   function comma(n) { return whole(n).toLocaleString(); }
 
+  /** Weights keep a decimal, so "251.5 to 249.4" agrees with "down 2.1". */
+  function lb(n) {
+    const v = Number(n);
+    if (!isFinite(v)) return '—';
+    return (Math.round(v * 10) / 10).toFixed(1);
+  }
+
   /** "Tue Sep 22" from "2026-09-22", without timezone surprises. */
   function dayLabel(key, opts) {
     const [y, m, d] = String(key).split('-').map(Number);
@@ -217,9 +224,9 @@ const Report = (() => {
       const change = w.change;
       const arrow = change == null ? '' : (change < 0 ? 'down ' : (change > 0 ? 'up ' : ''));
       weightBlock = '<div class="rp-kv">' +
-        line('First', comma(w.start) + ' lb', '') +
-        line('Latest', comma(w.end) + ' lb', '') +
-        line('Change', change == null ? '—' : arrow + Math.abs(change) + ' lb', '') +
+        line('First', lb(w.start) + ' lb', '') +
+        line('Latest', lb(w.end) + ' lb', '') +
+        line('Change', change == null ? '—' : arrow + lb(Math.abs(change)) + ' lb', '') +
         '</div>';
     }
 
@@ -284,8 +291,8 @@ const Report = (() => {
     L.push('');
     if (w.start != null && w.end != null) {
       L.push('WEIGHT');
-      L.push('  ' + comma(w.start) + ' lb -> ' + comma(w.end) + ' lb  (change ' +
-             (w.change == null ? '-' : w.change) + ' lb)');
+      L.push('  ' + lb(w.start) + ' lb -> ' + lb(w.end) + ' lb  (change ' +
+             (w.change == null ? '-' : lb(w.change)) + ' lb)');
       L.push('');
     }
     if ((d.symptoms || []).length) {

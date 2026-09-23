@@ -5,9 +5,9 @@ Built for logging in under ten seconds, from a truck, with one thumb, on bad sig
 
 No mood tracking. No hunger scales. No journaling. No streaks or badges.
 
-**Status: Phase 3 is built and live.** The app installs on your phone, logs
-offline, and you can now change every target from the phone. Week view and the
-visit report are next.
+**Status: finished and live.** All four phases are built. The app installs on
+your phone, logs offline, keeps your targets, nudges you on protein, and prints
+a report for trial visits.
 
 **The app: https://treaderman.github.io/health-tracker/**
 Open that in Safari on your iPhone — see [INSTALL.md](INSTALL.md) for the five
@@ -124,6 +124,28 @@ is due, including when quiet hours will swallow it.
 
 ---
 
+## The week, and the visit report
+
+Tap the calendar icon on Today for **Week**: this Sunday-start week's averages
+and days-hit against your targets, then the last seven days as cards. Any day
+that fell under a minimum gets an amber note saying which one. It is all worked
+out on the phone, so it reads with no signal.
+
+**Visit report** at the bottom of that screen builds a clean summary for any
+range — two weeks, four weeks, ninety days, or dates you pick. It shows daily
+averages against your target ranges, how many days you hit each minimum and each
+range, activity totals, weight change, symptoms, and a day-by-day table.
+
+Three ways to get it off the phone:
+
+- **Show them the screen.** It is laid out to be readable across a desk.
+- **Copy or share as text.** Lands in a message, an email, or Notes.
+- **Print or save as PDF.** This one needs a browser tab — open
+  `treaderman.github.io/health-tracker/` in Safari rather than the home screen
+  icon, then Share → Print, and pinch out on the preview to save a PDF. A
+  home-screen web app on iOS has no print menu of its own, which is an Apple
+  limitation rather than something the app can work around.
+
 ## Backing up the sheet
 
 Your data lives in one spreadsheet, so give yourself a copy now and then.
@@ -180,7 +202,8 @@ health-tracker/
 │  ├─ api.js            talking to Apps Script, and the CORS rules it needs
 │  ├─ state.js          day rollover, totals, merging outbox with sheet
 │  ├─ sync.js           flushing the outbox, retries, the waiting badge
-│  ├─ ui.js             every screen
+│  ├─ report.js         the week view and the visit report
+│  ├─ ui.js             every other screen
 │  └─ app.js            boot
 ├─ sw.js                service worker: caches the app, never your data
 ├─ manifest.webmanifest

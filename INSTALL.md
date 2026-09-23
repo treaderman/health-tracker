@@ -112,6 +112,16 @@ entry carries an ID your phone made and the sheet refuses an ID it already has.
 - [ ] Log another protein food. The event **moves**; it does not become two.
 - [ ] Late at night, Today says "Quiet hours, no nudge" instead. That's correct.
 
+### Week and the visit report
+
+- [ ] On Today, tap the **calendar icon** at the top right. The week opens with
+      averages, days-hit, and the last seven days.
+- [ ] A day you logged lightly shows an amber **under calories** style note.
+- [ ] Tap **Visit report**, then **2 weeks**, then **Build report**.
+- [ ] Check one day's row against your sheet — the numbers should match exactly.
+- [ ] Tap **Copy or share as text**. It should offer the iPhone share sheet, so
+      you can drop it into a message or Notes.
+
 ### Dark mode
 
 - [ ] iPhone **Settings → Display & Brightness → Dark**. Open the app. It follows.

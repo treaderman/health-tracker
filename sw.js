@@ -5,7 +5,7 @@
  * cached reply would be worse than no reply.
  */
 
-const CACHE = 'health-tracker-v4';
+const CACHE = 'health-tracker-v5';
 
 const SHELL = [
   './',
