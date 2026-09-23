@@ -87,6 +87,31 @@ entry carries an ID your phone made and the sheet refuses an ID it already has.
       Change the calories and tap **Save changes**. The number updates on Today.
 - [ ] Tap **Delete** on an entry. It disappears, and disappears from the sheet too.
 
+### Targets and saved foods
+
+- [ ] Tap the gear. Under **Current targets**, change **Calories, low** to 2800
+      and tap **Save targets**. Today's calorie bar shifts to match.
+- [ ] Open your sheet's **TargetHistory** tab. There's a new row, dated today.
+- [ ] Change it back to 2900 and save again. That writes a second dated row,
+      which is the point: the tab is a history, not a setting.
+- [ ] Try setting **Calories, low** above **Calories, high**. It refuses.
+- [ ] Gear again, tap **Manage saved foods**. Add one, edit it, rename it,
+      delete it. The count in your sheet's SavedFoods tab follows along.
+
+### The protein alert
+
+- [ ] Gear, scroll to **Protein clock**, tap **Send a test alert in 2 minutes**.
+- [ ] Within two minutes your phone should buzz with **Protein Clock test**.
+- [ ] If your watch is on your wrist, it should buzz too.
+- [ ] If nothing arrives: open the Google Calendar app, **menu > Settings >
+      Protein Clock**, make sure it's turned on and notifications are allowed.
+      Then test again.
+- [ ] Log a food with 30 g of protein. Today now shows a nudge time under
+      "Last protein". Check Google Calendar — there's one **Protein window**
+      event about four and a half hours out.
+- [ ] Log another protein food. The event **moves**; it does not become two.
+- [ ] Late at night, Today says "Quiet hours, no nudge" instead. That's correct.
+
 ### Dark mode
 
 - [ ] iPhone **Settings → Display & Brightness → Dark**. Open the app. It follows.

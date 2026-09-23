@@ -5,8 +5,9 @@ Built for logging in under ten seconds, from a truck, with one thumb, on bad sig
 
 No mood tracking. No hunger scales. No journaling. No streaks or badges.
 
-**Status: Phase 2 is built and live.** The app is installable on your phone and
-logs offline. Week view, the visit report and the full Settings screen are next.
+**Status: Phase 3 is built and live.** The app installs on your phone, logs
+offline, and you can now change every target from the phone. Week view and the
+visit report are next.
 
 **The app: https://treaderman.github.io/health-tracker/**
 Open that in Safari on your iPhone — see [INSTALL.md](INSTALL.md) for the five
@@ -58,10 +59,16 @@ entries arrive. You never refresh anything.
 
 ## Changing your targets
 
-Editing targets from the app's Settings screen comes with the next phase, along
-with the TargetHistory row it writes for you.
+Open the app, tap the gear, and edit them under **Current targets**. Tapping
+**Save targets** writes a dated row to **TargetHistory**, so every nutritionist
+visit leaves a record without you thinking about it. The app refuses to save a
+low that sits above its high.
 
-For now, edit the **Settings** tab directly. Find the row by its key in column A
+Minimums, the protein clock, quiet hours, the Coke Zero toggle and the day
+rollover all live on the same screen. **Manage saved foods** is a tap below that:
+add, rename, edit or delete, and it works offline like everything else.
+
+You can still edit the **Settings** tab directly. Find the row by its key in column A
 and change column B.
 
 | Key | Means | Now |
@@ -104,9 +111,16 @@ would land between 10 PM and 6 AM it is skipped.
    and **Time Sensitive** on if offered.
 4. Apple Watch app → **Notifications → Google Calendar** → **Mirror my iPhone**.
 
-The Protein Clock calendar exists but may not be ticked in your calendar list yet.
-On calendar.google.com, look under "My calendars" and tick it so you can see the
-events. We run a live two-minute alert test in Phase 3.
+**To prove it reaches you:** in the app, tap the gear, scroll to **Protein clock**
+and tap **Send a test alert in 2 minutes**. A one-off event goes on the calendar
+and should buzz your phone and watch. It replaces any earlier test rather than
+piling up, and it deliberately ignores quiet hours because it is a test.
+
+If nothing arrives, it is the calendar setup above rather than the app — most
+often the Protein Clock calendar is not turned on in the Google Calendar app.
+
+The Today screen and the Settings screen both tell you when the next real nudge
+is due, including when quiet hours will swallow it.
 
 ---
 
