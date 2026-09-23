@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Health Tracker</title>
+<meta name="theme-color" content="#F6F5F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1113" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Health">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ TODAY ============ -->
+  <section class="screen" data-screen="today">
+    <header class="bar">
+      <div>
+        <h1 id="today-title">Today</h1>
+        <p class="sub" id="today-date"></p>
+      </div>
+      <div class="bar-right">
+        <button class="pill" id="sync-badge" hidden></button>
+        <button class="icon-btn" data-go="settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3 1a7.6 7.6 0 0 0-1.7-1l-.4-2.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.3-1-2 3.4L4.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7.6 7.6 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 1.7-1l2.3 1 2-3.4z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="pad">
+      <div id="bars"></div>
+
+      <div class="card" id="protein-card">
+        <div class="row">
+          <span class="label">Last protein</span>
+          <span class="big" id="protein-since">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="row tight">
+          <div class="marks">
+            <span id="mark-fruit" class="mark">Fruit</span>
+            <span id="mark-veg" class="mark">Vegetable</span>
+          </div>
+          <button class="link" id="reset-protein">Reset clock</button>
+        </div>
+      </div>
+
+      <div class="tiles" id="week-tiles"></div>
+
+      <div class="card goals" id="goals-card" hidden>
+        <span class="label">Goals</span>
+        <p id="goals-text"></p>
+      </div>
+
+      <div class="actions">
+        <button class="action" data-go="food">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v6M5 3v6M9 3v6M17 3c-1.5 2-2 4-2 7h4c0-3-.5-5-2-7zM15 10v11"/></svg>
+          <span>Food</span>
+        </button>
+        <button class="action" data-go="water">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.5 6 10.5A6 6 0 0 1 6 13.5C6 9.5 12 3 12 3z"/></svg>
+          <span>Water</span>
+        </button>
+        <button class="action" data-go="activity">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4.5a1.5 1.5 0 1 0 0-.001zM8 21l2.5-6 3-2.5 1.5 4 3 2M6 12l2-4 4-1.5 3 2.5 3 1"/></svg>
+          <span>Activity</span>
+        </button>
+      </div>
+
+      <p class="foot" id="today-foot"></p>
+    </div>
+  </section>
+
+  <!-- ============ FOOD ============ -->
+  <section class="screen" data-screen="food" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="today" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Add food</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <input type="search" id="food-search" placeholder="Search saved foods" autocomplete="off">
+      <div class="chips" id="food-chips"></div>
+
+      <div class="card">
+        <label class="field">
+          <span class="label">Item</span>
+          <input type="text" id="f-item" autocomplete="off" placeholder="What you ate">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="label">Calories</span>
+            <input type="number" id="f-cal" inputmode="numeric" placeholder="0">
+          </label>
+          <label class="field">
+            <span class="label">Protein (g)</span>
+            <input type="number" id="f-pro" inputmode="numeric" placeholder="0">
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label">Meal</span>
+          <select id="f-meal">
+            <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
+          </select>
+        </label>
+
+        <div class="toggles">
+          <button class="toggle" id="f-fruit" aria-pressed="false">Fruit</button>
+          <button class="toggle" id="f-veg" aria-pressed="false">Vegetable</button>
+          <button class="toggle" id="f-fav" aria-pressed="false">Save as favorite</button>
+        </div>
+      </div>
+
+      <button class="primary" id="f-log">Log it</button>
+      <button class="ghost" id="f-cancel" hidden>Cancel edit</button>
+
+      <h2 class="section">Today's food</h2>
+      <div id="food-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- ============ WATER ============ -->
+  <section class="screen" data-screen="water" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="today" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Add water</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <div class="seg" id="w-type" role="group" aria-label="Drink type">
+        <button data-type="Water" class="on">Water</button>
+        <button data-type="Unsweet tea">Unsweet tea</button>
+        <button data-type="Coke Zero">Coke Zero</button>
+        <button data-type="Other">Other</button>
+      </div>
+      <p class="note" id="w-counts"></p>
+
+      <div class="grid2" id="w-quick">
+        <button class="big-btn" data-oz="8">+8 oz</button>
+        <button class="big-btn" data-oz="16">+16 oz</button>
+        <button class="big-btn" data-oz="20">+20 oz</button>
+        <button class="big-btn" data-oz="32">+32 oz</button>
+      </div>
+
+      <div class="card">
+        <label class="field">
+          <span class="label">Custom amount</span>
+          <input type="number" id="w-custom" inputmode="numeric" placeholder="oz">
+        </label>
+        <button class="primary" id="w-log">Log it</button>
+      </div>
+
+      <h2 class="section">Today's drinks</h2>
+      <div id="water-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- ============ ACTIVITY ============ -->
+  <section class="screen" data-screen="activity" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="today" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Add activity</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <div class="seg" id="a-type" role="group" aria-label="Activity type">
+        <button data-type="Walk" class="on">Walk</button>
+        <button data-type="Strength">Strength</button>
+        <button data-type="Other">Other</button>
+      </div>
+
+      <div class="grid2" id="a-quick">
+        <button class="big-btn" data-min="10">10 min</button>
+        <button class="big-btn" data-min="15">15 min</button>
+        <button class="big-btn" data-min="20">20 min</button>
+        <button class="big-btn" data-min="30">30 min</button>
+      </div>
+
+      <div class="card">
+        <label class="field">
+          <span class="label">Other amount</span>
+          <input type="number" id="a-custom" inputmode="numeric" placeholder="minutes">
+        </label>
+        <button class="primary" id="a-log">Log activity</button>
+      </div>
+
+      <h2 class="section">Steps today</h2>
+      <div class="card">
+        <label class="field">
+          <span class="label">Step count</span>
+          <input type="number" id="a-steps" inputmode="numeric" placeholder="0">
+        </label>
+        <button class="primary" id="a-steps-save">Save steps</button>
+      </div>
+
+      <h2 class="section">Weight</h2>
+      <p class="note" id="a-weigh-prompt" hidden>It's Sunday — good day for a weigh-in.</p>
+      <div class="card">
+        <label class="field">
+          <span class="label">Weight (lb)</span>
+          <input type="number" id="a-weight" inputmode="decimal" step="0.1" class="huge" placeholder="0">
+        </label>
+        <label class="field">
+          <span class="label">Waist (in, optional)</span>
+          <input type="number" id="a-waist" inputmode="decimal" step="0.1" placeholder="">
+        </label>
+        <button class="primary" id="a-weight-save">Save weight</button>
+      </div>
+
+      <h2 class="section">Symptoms</h2>
+      <div class="chips" id="a-symptoms"></div>
+      <button class="primary" id="a-sym-save">Save symptoms</button>
+
+      <h2 class="section">Today's activity</h2>
+      <div id="activity-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="screen" data-screen="settings" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="today" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Settings</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <div class="card">
+        <span class="label">Connection</span>
+        <p class="note">These two came from setup. You enter them once.</p>
+        <label class="field">
+          <span class="label">Web app link</span>
+          <input type="url" id="s-url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec">
+        </label>
+        <label class="field">
+          <span class="label">Secret token</span>
+          <input type="text" id="s-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="32 letters and numbers">
+        </label>
+        <button class="primary" id="s-save">Save and test</button>
+        <p class="note" id="s-result"></p>
+      </div>
+
+      <div class="card">
+        <span class="label">Sync</span>
+        <p class="note" id="s-sync"></p>
+        <button class="ghost" id="s-sync-now">Sync now</button>
+        <button class="ghost" id="s-refresh">Refresh from sheet</button>
+      </div>
+
+      <div class="card">
+        <span class="label">Your targets</span>
+        <p class="note">Editing targets in the app comes next. For now they're read from your sheet.</p>
+        <div id="s-targets" class="kv"></div>
+      </div>
+
+      <p class="foot" id="s-version"></p>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/db.js"></script>
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
