@@ -41,6 +41,7 @@
           <span class="label">Last protein</span>
           <span class="big" id="protein-since">—</span>
         </div>
+        <p class="note" id="protein-next"></p>
         <div class="divider"></div>
         <div class="row tight">
           <div class="marks">
@@ -259,6 +260,10 @@
         <p class="note" id="s-result"></p>
       </div>
 
+      <div id="s-prefs"></div>
+
+      <button class="ghost" data-go="foods">Manage saved foods</button>
+
       <div class="card">
         <span class="label">Sync</span>
         <p class="note" id="s-sync"></p>
@@ -266,13 +271,54 @@
         <button class="ghost" id="s-refresh">Refresh from sheet</button>
       </div>
 
+      <p class="foot" id="s-version"></p>
+    </div>
+  </section>
+
+  <!-- ============ SAVED FOODS ============ -->
+  <section class="screen" data-screen="foods" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="settings" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Saved foods</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
       <div class="card">
-        <span class="label">Your targets</span>
-        <p class="note">Editing targets in the app comes next. For now they're read from your sheet.</p>
-        <div id="s-targets" class="kv"></div>
+        <span class="label" id="sf-heading">Add a saved food</span>
+        <label class="field">
+          <span class="label">Name</span>
+          <input type="text" id="sf-name" autocomplete="off" placeholder="What you call it">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="label">Calories</span>
+            <input type="number" id="sf-cal" inputmode="numeric" placeholder="0">
+          </label>
+          <label class="field">
+            <span class="label">Protein (g)</span>
+            <input type="number" id="sf-pro" inputmode="numeric" placeholder="0">
+          </label>
+        </div>
+        <label class="field">
+          <span class="label">Usual meal</span>
+          <select id="sf-meal">
+            <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
+          </select>
+        </label>
+        <div class="toggles">
+          <button class="toggle" id="sf-fruit" aria-pressed="false">Fruit</button>
+          <button class="toggle" id="sf-veg" aria-pressed="false">Vegetable</button>
+        </div>
+        <button class="primary" id="sf-save">Save</button>
+        <button class="ghost" id="sf-cancel" hidden>Cancel</button>
       </div>
 
-      <p class="foot" id="s-version"></p>
+      <h2 class="section">Your saved foods</h2>
+      <input type="search" id="sf-search" placeholder="Search" autocomplete="off">
+      <div id="sf-list" class="list"></div>
     </div>
   </section>
 

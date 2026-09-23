@@ -86,6 +86,9 @@ const API = (() => {
     ping: () => get('ping'),
     bootstrap: (date, days) => get('bootstrap', { date, days: String(days || 8) }),
     send: ops => post('log', { ops }),
-    resetProteinClock: () => post('resetProteinClock', {})
+    resetProteinClock: () => post('resetProteinClock', {}),
+    saveSettings: settings => post('saveSettings', { settings }),
+    saveTargets: (targets, date) => post('saveTargets', { targets, date }),
+    testAlert: minutes => post('testProteinAlert', { minutes })
   };
 })();

@@ -11,6 +11,7 @@
 
 var PROTEIN_EVENT_PREFIX = 'Protein window';
 var PROTEIN_CALENDAR_NAME = 'Protein Clock';
+var PROTEIN_TEST_TITLE = 'Protein Clock test';
 
 function rescheduleProteinClock_() {
   var settings = readSettings_();
@@ -54,6 +55,66 @@ function resetProteinClock_() {
   writeSetting_('last_protein_reset', nowIso_());
   var clock = rescheduleProteinClock_();
   return { ok: true, resetAt: nowIso_(), proteinClock: clock };
+}
+
+/**
+ * When the next nudge is due, without creating anything.
+ *
+ * The phone shows this, so it has to agree with what the calendar will
+ * actually do — including staying quiet overnight.
+ */
+function nextProteinAlert_(settings) {
+  settings = settings || readSettings_();
+  var info = lastProteinInfo_(settings);
+  if (!info.timestamp) return null;
+
+  var lastMs = Date.parse(info.timestamp);
+  if (isNaN(lastMs)) return null;
+
+  var at = new Date(lastMs
+    + (num_(settings.protein_window_hours, 5) * 3600000)
+    - (num_(settings.protein_alert_lead_min, 30) * 60000));
+
+  var status = 'scheduled';
+  if (at.getTime() <= Date.now()) status = 'passed';
+  else if (inQuietHours_(at, settings)) status = 'quiet_hours';
+
+  return {
+    at: at.toISOString(),
+    atLocal: Utilities.formatDate(at, tz_(), 'h:mm a'),
+    status: status
+  };
+}
+
+/**
+ * Puts a one-off test alert on the Protein Clock calendar a couple of
+ * minutes out, so you can prove a notification reaches your phone and
+ * watch. Deliberately ignores quiet hours — it is a test.
+ */
+function testProteinAlert_(payload) {
+  var minutes = Math.max(1, Math.min(60, num_(payload && payload.minutes, 2)));
+  var cal = getProteinCalendar_();
+  if (!cal) return { ok: false, error: 'no_calendar' };
+
+  // Clear any earlier test so they do not pile up.
+  var now = new Date();
+  var soon = new Date(now.getTime() + 2 * 3600000);
+  cal.getEvents(now, soon).forEach(function (ev) {
+    if (String(ev.getTitle()).indexOf(PROTEIN_TEST_TITLE) === 0) ev.deleteEvent();
+  });
+
+  var at = new Date(Date.now() + minutes * 60000);
+  var event = cal.createEvent(PROTEIN_TEST_TITLE, at, new Date(at.getTime() + 5 * 60000));
+  event.removeAllReminders();
+  event.addPopupReminder(0);
+
+  return {
+    ok: true,
+    minutes: minutes,
+    at: at.toISOString(),
+    atLocal: Utilities.formatDate(at, tz_(), 'h:mm a'),
+    calendar: cal.getName()
+  };
 }
 
 function getProteinCalendar_(settings) {

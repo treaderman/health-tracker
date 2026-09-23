@@ -8,7 +8,14 @@
 const State = (() => {
   const SHEET_OF = {
     food: 'Food', fluids: 'Fluids', activity: 'Activity',
-    steps: 'Steps', body: 'Body', symptoms: 'Symptoms'
+    steps: 'Steps', body: 'Body', symptoms: 'Symptoms',
+    savedFoods: 'SavedFoods'
+  };
+
+  // What makes a row unique, per kind.
+  const KEY_FIELD = {
+    food: 'id', fluids: 'id', activity: 'id', body: 'id', symptoms: 'id',
+    steps: 'date', savedFoods: 'name'
   };
 
   const DEFAULTS = {
@@ -84,9 +91,10 @@ const State = (() => {
   /** Rows from the sheet with the outbox applied on top. */
   function rows(kind) {
     const sheet = SHEET_OF[kind];
+    const field = KEY_FIELD[kind] || 'id';
     const base = (snapshot && snapshot[kind]) || [];
     const map = new Map();
-    base.forEach(r => map.set(String(r.id != null && r.id !== '' ? r.id : r.date), r));
+    base.forEach(r => map.set(String(r[field] == null ? '' : r[field]), r));
 
     pending.forEach(op => {
       if (op.sheet !== sheet) return;
@@ -201,15 +209,21 @@ const State = (() => {
   }
 
   function savedFoods() {
-    const list = (snapshot && snapshot.savedFoods) || [];
-    return list.slice().sort((a, b) => num(b.times_used, 0) - num(a.times_used, 0));
+    return rows('savedFoods')
+      .filter(f => String(f.name || '').trim())
+      .sort((a, b) => num(b.times_used, 0) - num(a.times_used, 0));
+  }
+
+  /** When the sheet says the next protein nudge is due. */
+  function proteinAlert() {
+    return (snapshot && snapshot.proteinAlert) || null;
   }
 
   return {
     SHEET_OF, num, isY,
     settings, setting, dayKey, stamp, shiftDay, weekStart,
     setSnapshot, getSnapshot, setPending, pendingCount,
-    rows, onDay, totals, week, lastProteinMs, sinceText,
+    rows, onDay, totals, week, lastProteinMs, sinceText, proteinAlert,
     drinkCounts, mealForNow, savedFoods
   };
 })();

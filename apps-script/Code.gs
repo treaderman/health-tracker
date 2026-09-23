@@ -83,6 +83,7 @@ function route_(action, envelope, payload) {
       case 'saveFavorite':      return saveFavorite_(payload);
       case 'deleteFavorite':    return deleteFavorite_(payload);
       case 'resetProteinClock': return resetProteinClock_();
+      case 'testProteinAlert':  return testProteinAlert_(payload);
       case 'report':            return report_(payload);
       default:                  return { ok: false, error: 'unknown_action' };
     }
@@ -300,15 +301,31 @@ function writeSetting_(key, value) {
   appendRow_('Settings', [key, value]);
 }
 
+var CLOCK_KEYS = ['protein_threshold_g', 'protein_window_hours',
+                 'protein_alert_lead_min', 'quiet_start', 'quiet_end'];
+
 function saveSettings_(payload) {
   var incoming = (payload && payload.settings) || {};
   var n = 0;
+  var touchedClock = false;
+
   for (var k in incoming) {
-    if (k === 'calendar_id') continue;
+    if (k === 'calendar_id') continue;      // set by setup, not by the app
+    if (k === 'last_protein_reset') continue;
     writeSetting_(k, incoming[k]);
+    if (CLOCK_KEYS.indexOf(k) !== -1) touchedClock = true;
     n++;
   }
-  return { ok: true, updated: n, settings: readSettings_() };
+
+  var settings = readSettings_();
+  var clock = null;
+  if (touchedClock) {
+    // Move the pending nudge to match the new settings.
+    try { clock = rescheduleProteinClock_(); }
+    catch (e) { clock = { scheduled: false, reason: 'error', error: String((e && e.message) || e) }; }
+  }
+
+  return { ok: true, updated: n, settings: settings, proteinClock: clock };
 }
 
 var TARGET_KEYS = ['cal_low', 'cal_high', 'protein_low', 'protein_high', 'fluid_low', 'fluid_high'];
@@ -517,7 +534,8 @@ function bootstrap_(p) {
     steps: recent('Steps'),
     body: recent('Body'),
     symptoms: recent('Symptoms'),
-    lastProtein: lastProteinInfo_(settings)
+    lastProtein: lastProteinInfo_(settings),
+    proteinAlert: nextProteinAlert_(settings)
   };
 }
 

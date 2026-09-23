@@ -18,6 +18,8 @@ const UI = (() => {
 
   function go(name) {
     screen = name;
+    if (name === 'settings') buildSettings();
+    if (name === 'foods') clearSavedForm();
     $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
     window.scrollTo(0, 0);
     render();
@@ -91,6 +93,15 @@ const UI = (() => {
       bar('Fluids', t.oz, 'oz', State.setting('fluid_min'), State.setting('fluid_low'), State.setting('fluid_high'));
 
     $('#protein-since').textContent = State.sinceText(State.lastProteinMs());
+
+    const nextAlert = State.proteinAlert();
+    const nudge = $('#protein-next');
+    if (nudge) {
+      if (!nextAlert) nudge.textContent = '';
+      else if (nextAlert.status === 'scheduled') nudge.textContent = 'Nudge at ' + nextAlert.atLocal;
+      else if (nextAlert.status === 'quiet_hours') nudge.textContent = 'Quiet hours, no nudge';
+      else nudge.textContent = 'Window passed';
+    }
     $('#mark-fruit').className = 'mark' + (t.fruit ? ' on' : '');
     $('#mark-veg').className = 'mark' + (t.veg ? ' on' : '');
 
@@ -217,27 +228,264 @@ const UI = (() => {
 
   /* ---------------- settings ---------------- */
 
+  const TARGET_FIELDS = [
+    ['cal_low', 'Calories, low'], ['cal_high', 'Calories, high'],
+    ['protein_low', 'Protein low (g)'], ['protein_high', 'Protein high (g)'],
+    ['fluid_low', 'Fluids low (oz)'], ['fluid_high', 'Fluids high (oz)']
+  ];
+
+  const MIN_FIELDS = [
+    ['cal_min', 'Calories minimum'], ['protein_min', 'Protein minimum (g)'],
+    ['fluid_min', 'Fluids minimum (oz)'], ['activity_min_week', 'Activity min/week'],
+    ['walks_per_week', 'Walks per week'], ['walk_minutes', 'Minutes per walk'],
+    ['strength_sessions_low', 'Strength sessions/week']
+  ];
+
+  const CLOCK_FIELDS = [
+    ['protein_threshold_g', 'Counts as protein at (g)'],
+    ['protein_window_hours', 'Protein window (hours)'],
+    ['protein_alert_lead_min', 'Warn this many minutes early']
+  ];
+
+  const DAY_FIELDS = [
+    ['day_rollover_hour', 'New day starts at (0-23)'],
+    ['under_min_amber_after_hour', 'Bars turn amber after (0-23)']
+  ];
+
+  function escapeAttr(v) {
+    return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function numField(key, label) {
+    const v = State.settings()[key];
+    return '<label class="field"><span class="label">' + label + '</span>' +
+      '<input type="number" inputmode="numeric" id="set-' + key + '" value="' + escapeAttr(v) + '"></label>';
+  }
+
+  function timeField(key, label) {
+    const raw = String(State.settings()[key] || '');
+    const m = raw.match(/^(\d{1,2}):(\d{2})/);
+    const v = m ? (String(m[1]).padStart(2, '0') + ':' + m[2]) : '';
+    return '<label class="field"><span class="label">' + label + '</span>' +
+      '<input type="time" id="set-' + key + '" value="' + escapeAttr(v) + '"></label>';
+  }
+
+  function pairs(fields, fn) {
+    let out = '';
+    for (let i = 0; i < fields.length; i += 2) {
+      const a = fields[i], b = fields[i + 1];
+      out += '<div class="field-row">' + fn(a[0], a[1]) + (b ? fn(b[0], b[1]) : '<div></div>') + '</div>';
+    }
+    return out;
+  }
+
+  /* Rebuilds the editable settings. Only called when you arrive on the
+     screen, so a background sync cannot wipe what you are typing. */
+  function buildSettings() {
+    const s = State.settings();
+    const cokeOn = String(s.coke_zero_counts).trim().toUpperCase() === 'TRUE';
+
+    $('#s-prefs').innerHTML =
+      '<div class="card">' +
+        '<span class="label">Current targets</span>' +
+        '<p class="note">Saving these writes a dated row to TargetHistory, so each visit leaves a record.</p>' +
+        pairs(TARGET_FIELDS, numField) +
+        '<label class="field"><span class="label">Goals shown on Today</span>' +
+        '<textarea id="set-goals_text" rows="3">' + escapeHtml(s.goals_text || '') + '</textarea></label>' +
+        '<button class="primary" id="save-targets">Save targets</button>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<span class="label">Minimums</span>' +
+        '<p class="note">The floors that rarely change.</p>' +
+        pairs(MIN_FIELDS, numField) +
+        '<button class="primary" id="save-mins">Save minimums</button>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<span class="label">Drinks</span>' +
+        '<div class="toggles" style="margin-top:8px">' +
+        '<button class="toggle" id="set-coke" aria-pressed="' + cokeOn + '">Coke Zero counts toward fluids</button>' +
+        '</div>' +
+        '<p class="note">Changing this affects new entries only. Past days keep what they were logged with.</p>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<span class="label">Protein clock</span>' +
+        '<p class="note" id="clock-status"></p>' +
+        pairs(CLOCK_FIELDS, numField) +
+        pairs([['quiet_start', 'Quiet from'], ['quiet_end', 'Quiet until']], timeField) +
+        '<button class="primary" id="save-clock">Save protein clock</button>' +
+        '<button class="ghost" id="test-alert">Send a test alert in 2 minutes</button>' +
+        '<p class="note" id="test-alert-result"></p>' +
+      '</div>' +
+
+      '<div class="card">' +
+        '<span class="label">Day</span>' +
+        pairs(DAY_FIELDS, numField) +
+        '<p class="note">A new day starting at 3 means a midnight snack still counts toward the day before.</p>' +
+        '<button class="primary" id="save-day">Save</button>' +
+      '</div>';
+
+    wireSettingsButtons();
+    updateClockStatus();
+  }
+
+  function updateClockStatus() {
+    const el = $('#clock-status');
+    if (!el) return;
+    const a = State.proteinAlert();
+    if (!a) { el.textContent = 'No protein logged yet, so nothing is scheduled.'; return; }
+    if (a.status === 'scheduled') el.textContent = 'Next nudge at ' + a.atLocal + '.';
+    else if (a.status === 'quiet_hours') el.textContent = 'The next nudge would land in quiet hours, so it is skipped.';
+    else el.textContent = 'That window has already passed.';
+  }
+
+  function readFields(fields) {
+    const out = {};
+    fields.forEach(f => {
+      const el = $('#set-' + f[0]);
+      if (el && el.value !== '') out[f[0]] = el.value;
+    });
+    return out;
+  }
+
+  async function pushSettings(values, label) {
+    if (!API.configured()) { toast('Connect in Settings first'); return; }
+    toast('Saving...');
+    try {
+      const res = await API.saveSettings(values);
+      if (res && res.ok) {
+        await Sync.refresh();
+        buildSettings();
+        render();
+        toast(label + ' saved');
+      } else {
+        toast('The sheet refused that');
+      }
+    } catch (err) {
+      toast(friendlyError(err.message));
+    }
+  }
+
+  function wireSettingsButtons() {
+    const t = $('#save-targets');
+    if (t) t.addEventListener('click', async () => {
+      if (!API.configured()) { toast('Connect first'); return; }
+      const targets = readFields(TARGET_FIELDS);
+      targets.goals_text = $('#set-goals_text').value;
+      if (State.num(targets.cal_low, 0) > State.num(targets.cal_high, 0) ||
+          State.num(targets.protein_low, 0) > State.num(targets.protein_high, 0) ||
+          State.num(targets.fluid_low, 0) > State.num(targets.fluid_high, 0)) {
+        toast('A low is higher than its high');
+        return;
+      }
+      toast('Saving...');
+      try {
+        const res = await API.saveTargets(targets, State.dayKey());
+        if (res && res.ok) {
+          await Sync.refresh();
+          buildSettings();
+          render();
+          toast('Targets saved and dated');
+        } else toast('The sheet refused that');
+      } catch (err) { toast(friendlyError(err.message)); }
+    });
+
+    const m = $('#save-mins');
+    if (m) m.addEventListener('click', () => pushSettings(readFields(MIN_FIELDS), 'Minimums'));
+
+    const c = $('#save-clock');
+    if (c) c.addEventListener('click', () => {
+      const vals = readFields(CLOCK_FIELDS);
+      ['quiet_start', 'quiet_end'].forEach(k => {
+        const el = $('#set-' + k);
+        if (el && el.value) vals[k] = el.value;
+      });
+      pushSettings(vals, 'Protein clock');
+    });
+
+    const d = $('#save-day');
+    if (d) d.addEventListener('click', () => pushSettings(readFields(DAY_FIELDS), 'Day'));
+
+    const coke = $('#set-coke');
+    if (coke) coke.addEventListener('click', () => {
+      const next = coke.getAttribute('aria-pressed') !== 'true';
+      coke.setAttribute('aria-pressed', String(next));
+      pushSettings({ coke_zero_counts: next ? 'TRUE' : 'FALSE' }, 'Drinks');
+    });
+
+    const test = $('#test-alert');
+    if (test) test.addEventListener('click', async () => {
+      if (!API.configured()) { toast('Connect first'); return; }
+      $('#test-alert-result').textContent = 'Asking the calendar...';
+      try {
+        const res = await API.testAlert(2);
+        if (res && res.ok) {
+          $('#test-alert-result').textContent =
+            'Test alert set for ' + res.atLocal + ' on the ' + res.calendar + ' calendar. ' +
+            'If it does not reach your phone, the Google Calendar app needs that calendar ' +
+            'turned on with notifications allowed.';
+          toast('Test alert set');
+        } else {
+          $('#test-alert-result').textContent = (res && res.error === 'no_calendar')
+            ? 'No Protein Clock calendar found. Run setup() again in the Apps Script editor.'
+            : 'The calendar refused that.';
+        }
+      } catch (err) {
+        $('#test-alert-result').textContent = friendlyError(err.message);
+      }
+    });
+  }
+
+  /* Only the parts that change on their own. Never touches the inputs. */
   function renderSettings() {
-    $('#s-url').value = API.getUrl();
-    $('#s-token').value = API.getToken();
+    if (!$('#s-prefs').innerHTML.trim()) buildSettings();
+    if (!$('#s-url').value) $('#s-url').value = API.getUrl();
+    if (!$('#s-token').value) $('#s-token').value = API.getToken();
 
     const n = State.pendingCount();
     $('#s-sync').textContent = !API.configured()
       ? 'Not connected yet.'
-      : (n ? `${n} ${n === 1 ? 'entry' : 'entries'} waiting to sync.` : 'Everything is synced.');
+      : (n ? n + (n === 1 ? ' entry' : ' entries') + ' waiting to sync.' : 'Everything is synced.');
 
-    const s = State.settings();
-    const snap = State.getSnapshot();
-    $('#s-targets').innerHTML = snap ? `
-      <div><span>Calories</span><span>${s.cal_low}–${s.cal_high} (min ${s.cal_min})</span></div>
-      <div><span>Protein</span><span>${s.protein_low}–${s.protein_high} g (min ${s.protein_min})</span></div>
-      <div><span>Fluids</span><span>${s.fluid_low}–${s.fluid_high} oz (min ${s.fluid_min})</span></div>
-      <div><span>Activity</span><span>${s.activity_min_week} min/week</span></div>
-      <div><span>Coke Zero counts</span><span>${String(s.coke_zero_counts).toUpperCase() === 'TRUE' ? 'Yes' : 'No'}</span></div>
-      <div><span>Protein window</span><span>${s.protein_window_hours} h, alert ${s.protein_alert_lead_min || 30} min early</span></div>
-    ` : '<p class="note">Nothing downloaded yet.</p>';
+    $('#s-version').textContent = 'Health Tracker \u00b7 phase 3';
+    updateClockStatus();
+  }
 
-    $('#s-version').textContent = 'Health Tracker · phase 2';
+  /* ---------------- saved foods ---------------- */
+
+  let editingSavedName = null;
+
+  function clearSavedForm() {
+    editingSavedName = null;
+    $('#sf-heading').textContent = 'Add a saved food';
+    $('#sf-name').value = '';
+    $('#sf-cal').value = '';
+    $('#sf-pro').value = '';
+    $('#sf-meal').value = 'Snack';
+    $('#sf-fruit').setAttribute('aria-pressed', 'false');
+    $('#sf-veg').setAttribute('aria-pressed', 'false');
+    $('#sf-cancel').hidden = true;
+  }
+
+  function renderFoods() {
+    const term = $('#sf-search').value.trim().toLowerCase();
+    const list = State.savedFoods().filter(f => !term || String(f.name).toLowerCase().includes(term));
+
+    $('#sf-list').innerHTML = list.length ? list.map(f => {
+      const bits = [whole(State.num(f.calories, 0)) + ' cal',
+                    whole(State.num(f.protein_g, 0)) + 'g protein'];
+      const flags = [State.isY(f.fruit) ? 'fruit' : '', State.isY(f.vegetable) ? 'veg' : ''].filter(Boolean);
+      if (flags.length) bits.push(flags.join(', '));
+      const used = State.num(f.times_used, 0);
+      if (used) bits.push('used ' + used + ' times');
+      return '<div class="item" data-name="' + escapeAttr(f.name) + '">' +
+        '<div class="main"><div class="t">' + escapeHtml(f.name) + '</div>' +
+        '<div class="s">' + escapeHtml(bits.join(' \u00b7 ')) +
+        (f._pending ? '<span class="pending"> \u00b7 waiting</span>' : '') + '</div></div>' +
+        '<button class="edit">Edit</button><button class="del">Delete</button></div>';
+    }).join('') : '<div class="item"><div class="main"><div class="s">Nothing here yet.</div></div></div>';
   }
 
   /* ---------------- shared bits ---------------- */
@@ -276,6 +524,7 @@ const UI = (() => {
     else if (screen === 'water') renderWater();
     else if (screen === 'activity') renderActivity();
     else if (screen === 'settings') renderSettings();
+    else if (screen === 'foods') renderFoods();
   }
 
   /* ---------------- logging ---------------- */
@@ -498,6 +747,72 @@ const UI = (() => {
       symptomPicks = new Set();
       toast('Symptoms saved');
       go('today');
+    });
+
+    // --- saved foods ---
+    $('#sf-search').addEventListener('input', renderFoods);
+
+    ['#sf-fruit', '#sf-veg'].forEach(sel => {
+      $(sel).addEventListener('click', () => {
+        const el = $(sel);
+        el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      });
+    });
+
+    $('#sf-cancel').addEventListener('click', () => { clearSavedForm(); renderFoods(); });
+
+    $('#sf-save').addEventListener('click', async () => {
+      const name = $('#sf-name').value.trim();
+      if (!name) { toast('Give it a name'); $('#sf-name').focus(); return; }
+
+      const existing = State.savedFoods().find(f => String(f.name) === name);
+      const row = {
+        name: name,
+        meal_default: $('#sf-meal').value,
+        calories: State.num($('#sf-cal').value, 0),
+        protein_g: State.num($('#sf-pro').value, 0),
+        fruit: $('#sf-fruit').getAttribute('aria-pressed') === 'true' ? 'Y' : 'N',
+        vegetable: $('#sf-veg').getAttribute('aria-pressed') === 'true' ? 'Y' : 'N',
+        times_used: existing ? State.num(existing.times_used, 0) : 0
+      };
+
+      // Renaming means the old one has to go, or you end up with both.
+      if (editingSavedName && editingSavedName !== name) {
+        await Sync.log({ op: 'delete', sheet: 'SavedFoods', key: editingSavedName });
+      }
+      await Sync.log({ op: 'upsert', sheet: 'SavedFoods', key: name, row: row });
+
+      clearSavedForm();
+      renderFoods();
+      toast('Saved');
+    });
+
+    $('#sf-list').addEventListener('click', async e => {
+      const row = e.target.closest('.item');
+      if (!row || !row.dataset.name) return;
+      const name = row.dataset.name;
+
+      if (e.target.classList.contains('del')) {
+        await Sync.log({ op: 'delete', sheet: 'SavedFoods', key: name });
+        renderFoods();
+        toast('Deleted');
+        return;
+      }
+
+      if (e.target.classList.contains('edit')) {
+        const f = State.savedFoods().find(x => String(x.name) === name);
+        if (!f) return;
+        editingSavedName = name;
+        $('#sf-heading').textContent = 'Edit saved food';
+        $('#sf-name').value = f.name;
+        $('#sf-cal').value = State.num(f.calories, 0);
+        $('#sf-pro').value = State.num(f.protein_g, 0);
+        $('#sf-meal').value = f.meal_default || 'Snack';
+        $('#sf-fruit').setAttribute('aria-pressed', State.isY(f.fruit) ? 'true' : 'false');
+        $('#sf-veg').setAttribute('aria-pressed', State.isY(f.vegetable) ? 'true' : 'false');
+        $('#sf-cancel').hidden = false;
+        window.scrollTo(0, 0);
+      }
     });
 
     // --- settings ---
