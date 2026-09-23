@@ -525,6 +525,7 @@ const UI = (() => {
     else if (screen === 'activity') renderActivity();
     else if (screen === 'settings') renderSettings();
     else if (screen === 'foods') renderFoods();
+    else if (screen === 'week') Report.renderWeek();
   }
 
   /* ---------------- logging ---------------- */
@@ -877,6 +878,8 @@ const UI = (() => {
         toast(friendlyError(err.message));
       }
     });
+
+    Report.init();
 
     Sync.onChange(() => render());
     setInterval(() => { if (screen === 'today' && !document.hidden) renderToday(); }, 30000);

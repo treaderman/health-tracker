@@ -5,7 +5,7 @@
  * cached reply would be worse than no reply.
  */
 
-const CACHE = 'health-tracker-v3';
+const CACHE = 'health-tracker-v4';
 
 const SHELL = [
   './',
@@ -15,6 +15,7 @@ const SHELL = [
   'js/api.js',
   'js/state.js',
   'js/sync.js',
+  'js/report.js',
   'js/ui.js',
   'js/app.js',
   'manifest.webmanifest',

@@ -320,3 +320,70 @@ input[type="search"] { margin-bottom: 10px; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* ---------- week ---------- */
+
+.card.day { padding: 11px 14px; }
+.card.day .d { font-size: 15px; font-weight: 500; }
+.card.day .nums { font-size: 17px; font-weight: 500; margin: 3px 0 2px; }
+.under {
+  font-size: 11px;
+  color: var(--pill-text);
+  background: var(--pill-bg);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* ---------- visit report ---------- */
+
+.rp { font-size: 14px; }
+.rp-head { border-bottom: .5px solid var(--border); padding-bottom: 10px; margin-bottom: 4px; }
+.rp-head h2 { font-size: 17px; font-weight: 500; margin: 0; }
+.rp-head p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.rp section { margin-top: 18px; }
+.rp h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.rp-kv div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: .5px solid var(--border);
+}
+.rp-kv div:last-child { border-bottom: 0; }
+.rp-kv span:first-child { color: var(--muted); }
+.rp-kv span:last-child { font-weight: 500; text-align: right; }
+.rp-kv .t { display: block; font-weight: 400; font-size: 11px; color: var(--faint); }
+
+.rp-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rp-table th {
+  text-align: right;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 5px 4px;
+  border-bottom: .5px solid var(--border);
+}
+.rp-table th:first-child, .rp-table td:first-child { text-align: left; }
+.rp-table td { text-align: right; padding: 5px 4px; border-bottom: .5px solid var(--border); }
+
+/* ---------- printing ---------- */
+
+@media print {
+  .no-print, .bar, .toast { display: none !important; }
+  html, body { background: #fff; color: #000; }
+  .screen[hidden] { display: none; }
+  .pad { padding: 0; max-width: none; }
+  .card { border: 0; padding: 0; background: #fff; }
+  .rp { font-size: 11pt; }
+  .rp section { margin-top: 14pt; page-break-inside: avoid; }
+  .rp h3 { color: #444; }
+  .rp-kv span:first-child, .rp-head p, .rp-kv .t { color: #444; }
+  .rp-kv div, .rp-table td, .rp-table th { border-bottom: .5pt solid #bbb; }
+  .rp-table { page-break-inside: auto; }
+}

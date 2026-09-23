@@ -27,6 +27,9 @@
       </div>
       <div class="bar-right">
         <button class="pill" id="sync-badge" hidden></button>
+        <button class="icon-btn" data-go="week" aria-label="Week">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 9h16M9 4v3M15 4v3"/></svg>
+        </button>
         <button class="icon-btn" data-go="settings" aria-label="Settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3 1a7.6 7.6 0 0 0-1.7-1l-.4-2.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.3-1-2 3.4L4.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7.6 7.6 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 1.7-1l2.3 1 2-3.4z"/></svg>
         </button>
@@ -322,6 +325,61 @@
     </div>
   </section>
 
+  <!-- ============ WEEK ============ -->
+  <section class="screen" data-screen="week" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-go="today" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Week</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <div class="card" id="week-summary"></div>
+      <h2 class="section">Last 7 days</h2>
+      <div id="week-days"></div>
+      <button class="primary" data-go="report">Visit report</button>
+    </div>
+  </section>
+
+  <!-- ============ VISIT REPORT ============ -->
+  <section class="screen" data-screen="report" hidden>
+    <header class="bar no-print">
+      <button class="icon-btn" data-go="week" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h1>Visit report</h1>
+      <div class="bar-right"></div>
+    </header>
+
+    <div class="pad">
+      <div class="card no-print">
+        <span class="label">Date range</span>
+        <div class="seg" id="rp-presets" style="margin-top:8px">
+          <button data-days="14">2 weeks</button>
+          <button data-days="28">4 weeks</button>
+          <button data-days="90">90 days</button>
+        </div>
+        <div class="field-row">
+          <label class="field"><span class="label">From</span><input type="date" id="rp-from"></label>
+          <label class="field"><span class="label">To</span><input type="date" id="rp-to"></label>
+        </div>
+        <button class="primary" id="rp-run">Build report</button>
+      </div>
+
+      <div id="rp-out"></div>
+
+      <div id="rp-actions" class="no-print" hidden>
+        <button class="ghost" id="rp-print">Print or save as PDF</button>
+        <button class="ghost" id="rp-share">Copy or share as text</button>
+        <p class="note">Opened from your home screen there is no print menu, so
+          copy or share is the dependable way to get it off the phone. Opened in
+          Safari, Print gives you a PDF.</p>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <div id="toast" class="toast" hidden></div>
@@ -330,6 +388,7 @@
 <script src="js/api.js"></script>
 <script src="js/state.js"></script>
 <script src="js/sync.js"></script>
+<script src="js/report.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/app.js"></script>
 </body>
