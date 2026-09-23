@@ -5,7 +5,7 @@
  * cached reply would be worse than no reply.
  */
 
-const CACHE = 'health-tracker-v5';
+const CACHE = 'health-tracker-v6';
 
 const SHELL = [
   './',
@@ -27,7 +27,10 @@ const SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(SHELL))
+      // cache: 'reload' bypasses the browser's own HTTP cache, so a new
+      // version installs the files that are actually on the server rather
+      // than whatever was downloaded last time.
+      .then(c => Promise.all(SHELL.map(url => c.add(new Request(url, { cache: 'reload' })))))
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
